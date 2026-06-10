@@ -51,6 +51,52 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 **Final chunk count:** 147 (one per review, down from 204 with fixed-size chunking)
 
+**Sample chunks:**
+
+Chunk 1 — `prof_epstein_csci150.txt`
+```
+Professor: Susan Epstein | Course: CSCI150 | Source: Rate My Professors
+Quality: 2.0 | Difficulty: 5.0 | Course: CSCI150 | Date: Dec 29th, 2025
+Attendance: Mandatory | Grade: C
+Tags: Get ready to read, Lots of homework, Lecture heavy
+You will not learn anything from her slides, contains dense math. She is smart but can't teach. Slides have many mistakes. Homework questions are often confusing and there is no clear rubric what she wants. The grading is even worse, she wants specific things, only what she wants.
+```
+
+Chunk 2 — `prof_lynch_csci127.txt`
+```
+Professor: Melissa Lynch | Course: CSCI127 | Source: Rate My Professors
+Quality: 1.0 | Difficulty: 4.0 | Course: CSCI127 | Date: Feb 2nd, 2026
+Attendance: Mandatory | Grade: A+
+She dont answer her emails. Shes either late 15-30 mins or doesn't even show up. Shes difficult to work with as a professor.
+```
+
+Chunk 3 — `prof_lynch_csci160.txt`
+```
+Professor: Melissa Lynch | Course: CSCI160 | Source: Rate My Professors
+Quality: 1.0 | Difficulty: 3.0 | Course: CSCI160 | Date: May 29th, 2026
+Attendance: Not Mandatory | Grade: B+
+Tags: Graded by few things
+Comes to class 30 minutes late, grades late, doesn't respond to emails, talks absolute nonsense to waste lecture time, and uploads review quizzes the night before exams, or not at all. She lied about the contents inside the final exam. The final was NOT commulative.
+```
+
+Chunk 4 — `prof_maryash_csci135.txt`
+```
+Professor: Gennadi Maryash | Course: CSCI135 | Source: Rate My Professors
+Quality: 5.0 | Difficulty: 1.0 | Course: CSCI135 | Date: Feb 1st, 2023
+Attendance: Not Mandatory | Would Take Again: Yes | Grade: A+
+Tags: Clear grading criteria, Lots of homework, Respected
+Maryash is the best CS professor in Hunter. He is actually caring and wants his students to pass. Like many, all he does is read the slides but his curriculum and coursework is doable. He is very good with partial credit, I failed every-time Tong Yi taught it, as soon as it changed to Maryash, I passed. Only drag is fail final you fail the course.
+```
+
+Chunk 5 — `prof_maryash_csci160.txt`
+```
+Professor: Gennadi Maryash | Course: CSCI160 | Source: Rate My Professors
+Quality: 5.0 | Difficulty: 3.0 | Course: CSCI160 | Date: Jul 14th, 2024
+Attendance: Mandatory | Would Take Again: Yes | Grade: A
+Tags: Gives good feedback, Lots of homework, Lecture heavy
+I had to retake but he uses the same tests and quiz altered a little bit. Failed because you have to remember the circuits for the finals and also score a 70 on the finals no matter your grade. Homeworks were literally blank files on gradescope and I got credit for them. Quizzes can have phone out. No cheat sheet.
+```
+
 ---
 
 ## Embedding Model
@@ -64,6 +110,41 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 **Model used:** all-MiniLM-L6-v2 via sentence-transformers (runs locally, no API key needed)
 
 **Production tradeoff reflection:** all-MiniLM-L6-v2 is fast and free but it's a general-purpose model, not tuned for student reviews or CS course discussion. For a real deployment you'd weigh a few things: a larger model like text-embedding-3-large would probably rank review-specific phrasing better but adds API cost and latency per query. If the user base included a lot of non-native English speakers (which is realistic at Hunter), a multilingual model like multilingual-e5 would be worth considering. For this project the tradeoff is straightforward: local speed over raw accuracy.
+
+---
+
+## Retrieval Tests
+
+**Query 1:** "What do students say about Mneimneh teaching style in CSCI150?"
+
+Top 3 returned chunks (all from `prof_mneimneh_csci150.txt`, distances: 0.7851, 0.8041, 0.8127):
+- Chunk starting: *"This professor should not be teaching, at least in this manner, the exam changes last second..."*
+- Chunk starting: *"He is a bad teacher, bad orator, does not have enthusiasm for the class..."*
+- Chunk starting: *"Challenging and time consuming, can't really go into his teaching style as I rarely went to the lectures..."*
+
+**Why these are relevant:** All three chunks are from the correct file and directly discuss how Mneimneh teaches -- his lecture style, how he takes questions, and how students experience the class. The low distances (under 0.82) confirm strong semantic similarity. The query asked about teaching style and the chunks all contain first-hand opinions about exactly that.
+
+---
+
+**Query 2:** "How important is attendance for Shostak CSCI260?"
+
+Top 3 returned chunks (all from `prof_shostak_csci260.txt`, distances: 0.8365, 0.9184, 0.9641):
+- Chunk starting: *"If you have accommodations, dont take him. hes very difficult when it comes to accommodations"*
+- Chunk starting: *"He is a decent professor with harsh grading criteria. You must pass the final... Attendance is not mandatory but you should go if you want to pass..."*
+- Chunk starting: *"Do not take this course... he won't offer any additional outside help... doesn't post the slides on blackboard."*
+
+**Why these are relevant:** All three chunks are from the correct file. Two of them directly address attendance and what happens when you miss class. The retriever correctly associated "attendance" and "CSCI260" with Shostak's file rather than pulling generic attendance-related chunks from other files -- a marked improvement over the original fixed-size chunking approach.
+
+---
+
+**Query 3:** "What do students say about Melissa Lynch grading in CSCI160?"
+
+Top 3 returned chunks (distances: 0.4937, 0.4983, 0.5397):
+- `prof_lynch_csci160.txt` — *"Comes to class 30 minutes late, grades late, doesn't respond to emails..."*
+- `prof_lynch_csci160.txt` — *"A true gem of a professor. She wanted us to succeed. The grading criteria is very..."*
+- `prof_lynch_csci127.txt` — *"She wasn't that bad throughout the semester aside from only explaining one concept..."*
+
+The first two results are the right file and reflect the spread of opinions (negative vs positive). The third result pulls a Lynch CSCI127 chunk rather than another CSCI160 review, which is a minor miss -- but Lynch is still the right professor, so the answer won't be wrong, just slightly diluted by a different course's reviews.
 
 ---
 
@@ -90,7 +171,56 @@ Do not speculate, generalize, or fill in gaps with outside knowledge. Stick stri
 
 The user message then passes the retrieved chunks formatted as `[Source: filename]\n{chunk text}` followed by the question. Temperature is set to 0.2 to reduce creative variance.
 
-**How source attribution is surfaced in the response:** Source filenames are extracted programmatically from ChromaDB metadata at retrieval time and passed to the UI as a separate field-- the LLM never controls this. The UI displays them in a dedicated "Sources" box alongside the answer, so attribution is always present regardless of how the model phrases its response.
+**How source attribution is surfaced in the response:** Source filenames are extracted programmatically from ChromaDB metadata at retrieval time and passed to the UI as a separate field -- the LLM never controls this. The UI displays them in a dedicated "Sources" box alongside the answer, so attribution is always present regardless of how the model phrases its response.
+
+**Example response 1:**
+
+> *Query:* "How important is attendance for Shostak's CSCI260?"
+>
+> *Answer:* According to the excerpts, attendance is "Not Mandatory" for Professor Shostak's CSCI260 course, but it is highly recommended. Multiple reviews state that attending lectures is necessary to pass the course, as the professor does not post slides or other materials on Blackboard, and lectures provide important information for understanding the material and doing well on tests. One review says, "Lectures are not mandatory, but you need to attend them if you want to pass." Another review states, "Attendance is not mandatory but you should go if you want to pass..."
+>
+> *Sources:* prof_shostak_csci260.txt
+
+**Example response 2:**
+
+> *Query:* "What do students say about Mneimneh's teaching style in CSCI150?"
+>
+> *Answer:* According to the excerpts, students describe Mneimneh as a "bad teacher" and "bad orator" who lacks enthusiasm. His slides are described as just his notes, and he is "bad at taking questions." He relies almost entirely on students to self-study, and some say lectures are useless because he assumes prior knowledge of discrete math. A few students note that his class makes them think about mathematical concepts in a meaningful way and that paying close attention to lectures is helpful.
+>
+> *Sources:* prof_mneimneh_csci150.txt
+
+**Out-of-scope query:**
+
+> *Query:* "What is the capital of France?"
+>
+> *Answer:* I don't have enough information on that.
+>
+> *Sources:* prof_epstein_csci150.txt, prof_stjohn_csci127.txt, prof_yi_csci135.txt
+
+The system correctly declines to answer and does not draw on general knowledge. The listed sources are the closest semantic matches in the index (irrelevant to the query), confirming the fallback is triggered by the grounding instruction, not by an absence of retrieved documents.
+
+---
+
+## Query Interface
+
+The interface is a Gradio web app (`app.py`) running at `http://localhost:7860`.
+
+**Input:** A single text box labeled "Ask a question" where the user types a free-form question about a Hunter College CS professor or course.
+
+**Output:** Two text boxes displayed side by side:
+- *Answer* — the LLM-generated response grounded in the retrieved reviews
+- *Sources* — the filenames of the documents the retrieved chunks came from
+
+**Example buttons:** 10 pre-written questions are shown at the bottom as clickable examples. Clicking one fills the input box; the user then clicks "Ask" or presses Enter to submit.
+
+**Sample interaction:**
+
+> *Input:* "How important is attendance for Shostak's CSCI260?"
+>
+> *Answer:* According to the excerpts, attendance is "Not Mandatory" for Professor Shostak's CSCI260 course, but it is highly recommended. Multiple reviews state that attending lectures is necessary to pass the course, as the professor does not post slides or other materials on Blackboard...
+>
+> *Sources:*
+> • prof_shostak_csci260.txt
 
 ---
 
@@ -145,9 +275,9 @@ The user message then passes the retrieved chunks formatted as `[Source: filenam
 <!-- Reflect on how planning.md shaped your implementation.
      Answer both questions with at least 2–3 sentences each. -->
 
-**One way the spec helped you during implementation:**
+**One way the spec helped you during implementation:** The architecture diagram in planning.md laid out each pipeline stage with the specific tool at each step, which made it easy to implement and test each piece in isolation. When writing embed.py, knowing exactly what ingest.py was supposed to output (a list of dicts with `text` and `source` keys) meant there was no ambiguity about the interface between components. Without that pre-defined contract in the spec, it would have been easy to get mismatched data shapes between stages.
 
-**One way your implementation diverged from the spec, and why:**
+**One way your implementation diverged from the spec, and why:** The chunking strategy changed completely. The spec called for 400-character fixed-size chunks with 50-character overlap, but during retrieval testing we found that fixed-size chunking was splitting professor headers from review bodies. An anonymous mid-review chunk from the wrong professor was ranking as the top result for a Shostak query because it opened with "Attendance: Mandatory" and had no professor context. We switched to review-boundary chunking -- one complete review per chunk, always prefixed with the professor/course header -- which fixed the issue. The planning.md was updated to document the original approach, why it failed, and what changed.
 
 ---
 
