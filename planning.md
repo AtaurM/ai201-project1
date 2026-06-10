@@ -1,9 +1,9 @@
 # Project 1 Planning: The Unofficial Guide
 
-> Write this document before you write any pipeline code.
+<!-- > Write this document before you write any pipeline code.
 > Your spec and architecture diagram are what you'll use to direct AI tools (Claude, Copilot, etc.) to generate your implementation — the more specific they are, the more useful the generated code will be.
 > Update the Retrieval Approach and Chunking Strategy sections if you change your approach during implementation.
-> Update this file before starting any stretch features.
+> Update this file before starting any stretch features. -->
 
 ---
 
@@ -40,11 +40,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      numbers fit the structure of your documents.
      A review-heavy corpus warrants different chunking than a long FAQ. -->
 
-**Chunk size:**
+**Chunk size:** 400 characters
 
-**Overlap:**
+**Overlap:** 50 characters
 
-**Reasoning:**
+**Reasoning:** Each review is a short opinion, usually 2-5 sentences. 400 characters captures one complete thought without merging unrelated reviews. The 50-character overlap prevents key facts from getting cut off at a chunk boundary, which matters when a review body starts right after a metadata line.
 
 ---
 
@@ -56,11 +56,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      would you weigh in choosing a different embedding model — context length, multilingual
      support, accuracy on domain-specific text, latency? -->
 
-**Embedding model:**
+**Embedding model:** all-MiniLM-L6-v2 via sentence-transformers (runs locally, no API key needed)
 
-**Top-k:**
+**Top-k:** 5
 
-**Production tradeoff reflection:**
+**Production tradeoff reflection:** all-MiniLM-L6-v2 is fast and free but it's a general-purpose model, not tuned for student reviews or CS course discussion. For a real deployment you'd weigh a few things: a larger model like text-embedding-3-large would probably rank review-specific phrasing better but adds API cost and latency per query. If the user base included a lot of non-native English speakers (which is realistic at Hunter), a multilingual model like multilingual-e5 would be worth considering. For this project the tradeoff is straightforward: local speed over raw accuracy.
 
 ---
 
@@ -73,11 +73,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | What do students say about Melissa Lynch's grading in CSCI160? | Tough grader; some reviews mention strict curves and little partial credit |
+| 2 | Is Maryash good for CSCI135 if you have no C++ experience? | Mixed; several reviews warn it's very tough without prior C++ background, others say he's fair |
+| 3 | How important is attendance for Shostak's CSCI260? | Very important; he doesn't post slides online so missing class means missing content |
+| 4 | What do students say about Mneimneh's teaching style in CSCI150? | Highly praised lecturer; students consistently say he explains proofs clearly and makes the material interesting |
+| 5 | Do recent reviews recommend taking St. John for CSCI127? | Mostly negative in recent reviews; students cite cheating accusations, heavy workload, and poorly structured lectures |
 
 ---
 
@@ -87,9 +87,9 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      Consider: noisy or inconsistent documents, missing source attribution, off-topic
      retrieval, chunks that split key information across boundaries. -->
 
-1.
+1. Review text is noisy and inconsistent. Students write in fragments, use slang, mix in personal anecdotes, and sometimes reference the course by nickname (e.g., "discrete" instead of CSCI150). The embedding model may rank these poorly or return off-topic chunks when the query uses formal course names.
 
-2.
+2. Chunk boundaries may split a professor's name or course code from the actual review opinion. The metadata header (Quality, Difficulty, Course, Date) sits right above the review body with no blank line gap, so a chunk that starts mid-header won't have enough context to be useful for attribution.
 
 ---
 
@@ -100,6 +100,37 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      Label each stage with the tool or library you're using.
      You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
      You'll use this diagram as context when prompting AI tools to implement each stage. -->
+
+```
+documents/*.txt
+      |
+      v
+ ingest.py
+ (load + strip blank lines)
+      |
+      v
+ chunk_text()
+ (400 char chunks, 50 char overlap)
+      |
+      v
+ embed.py
+ (all-MiniLM-L6-v2 via sentence-transformers)
+      |
+      v
+ ChromaDB
+ (local persistent vector store, collection: unofficial_guide)
+      |
+      v
+ query.py -- retrieve top-5 chunks by cosine similarity
+      |
+      v
+ Groq API
+ (llama-3.3-70b-versatile, grounded system prompt)
+      |
+      v
+ app.py
+ (Gradio UI -- question in, answer + sources out)
+```
 
 ---
 
@@ -115,8 +146,8 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
      with my specified chunk size and overlap" is a plan. -->
 
-**Milestone 3 — Ingestion and chunking:**
+**Milestone 3 — Ingestion and chunking:** I'll give Claude the Chunking Strategy section and the Documents section and ask it to implement ingest.py with a chunk_text() function using the specified size and overlap. I'll verify by printing a sample of chunks and checking they're readable, not empty, and not merging reviews from different professors.
 
-**Milestone 4 — Embedding and retrieval:**
+**Milestone 4 — Embedding and retrieval:** I'll give Claude the Retrieval Approach section and the ingest.py output and ask it to implement embed.py that stores embeddings in ChromaDB. I'll verify by running a manual retrieval query before wiring up the LLM, checking that the top results are actually relevant to the question.
 
-**Milestone 5 — Generation and interface:**
+**Milestone 5 — Generation and interface:** I'll give Claude the Architecture diagram and the system prompt I want to use and ask it to implement query.py and app.py. I'll verify by running a test question through the Gradio UI and confirming the answer cites sources and doesn't hallucinate outside the documents.

@@ -1,9 +1,9 @@
 # The Unofficial Guide — Project 1
 
-> **How to use this template:**
+<!-- > **How to use this template:**
 > Complete each section *after* you've built and tested the corresponding part of your system.
 > Do not write placeholder text — if a section isn't done yet, leave it blank and come back.
-> Every section below is required for submission. One-liners will not receive full credit.
+> Every section below is required for submission. One-liners will not receive full credit. -->
 
 ---
 
@@ -43,11 +43,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      - Any preprocessing you did before chunking (e.g., stripping HTML, removing headers)
      - What your final chunk count was across all documents -->
 
-**Chunk size:**
+**Chunk size:** 400 characters
 
-**Overlap:**
+**Overlap:** 50 characters
 
-**Why these choices fit your documents:**
+**Why these choices fit your documents:** Each review is a short opinion, usually 2-5 sentences. 400 characters captures one complete thought without merging unrelated reviews together. The 50-character overlap prevents key facts from getting cut off at a chunk boundary, which matters when a review body starts right after a metadata line.
 
 **Final chunk count:**
 
@@ -61,9 +61,9 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      Consider: context length limits, multilingual support, accuracy on domain-specific text,
      latency, and local vs. API-hosted. -->
 
-**Model used:**
+**Model used:** all-MiniLM-L6-v2 via sentence-transformers (runs locally, no API key needed)
 
-**Production tradeoff reflection:**
+**Production tradeoff reflection:** all-MiniLM-L6-v2 is fast and free but it's a general-purpose model, not tuned for student reviews or CS course discussion. For a real deployment you'd weigh a few things: a larger model like text-embedding-3-large would probably rank review-specific phrasing better but adds API cost and latency per query. If the user base included a lot of non-native English speakers (which is realistic at Hunter), a multilingual model like multilingual-e5 would be worth considering. For this project the tradeoff is straightforward: local speed over raw accuracy.
 
 ---
 
