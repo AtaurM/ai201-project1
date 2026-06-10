@@ -49,7 +49,7 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 **Why these choices fit your documents:** Each review is a short opinion, usually 2-5 sentences. 400 characters captures one complete thought without merging unrelated reviews together. The 50-character overlap prevents key facts from getting cut off at a chunk boundary, which matters when a review body starts right after a metadata line.
 
-**Final chunk count:**
+**Final chunk count:** 204
 
 ---
 

@@ -73,7 +73,7 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | What do students say about Melissa Lynch's grading in CSCI160? | Tough grader; some reviews mention strict curves and little partial credit |
+| 1 | What do students say about Melissa Lynch's grading in CSCI160? | Mixed reviews; recurring complaints about lateness, slow grading, and no email responses, but some students say she gives good partial credit and is fair |
 | 2 | Is Maryash good for CSCI135 if you have no C++ experience? | Mixed; several reviews warn it's very tough without prior C++ background, others say he's fair |
 | 3 | How important is attendance for Shostak's CSCI260? | Very important; he doesn't post slides online so missing class means missing content |
 | 4 | What do students say about Mneimneh's teaching style in CSCI150? | Highly praised lecturer; students consistently say he explains proofs clearly and makes the material interesting |
