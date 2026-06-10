@@ -90,7 +90,7 @@ Do not speculate, generalize, or fill in gaps with outside knowledge. Stick stri
 
 The user message then passes the retrieved chunks formatted as `[Source: filename]\n{chunk text}` followed by the question. Temperature is set to 0.2 to reduce creative variance.
 
-**How source attribution is surfaced in the response:** Source filenames are extracted programmatically from ChromaDB metadata at retrieval time and passed to the UI as a separate field -- the LLM never controls this. The UI displays them in a dedicated "Sources" box alongside the answer, so attribution is always present regardless of how the model phrases its response.
+**How source attribution is surfaced in the response:** Source filenames are extracted programmatically from ChromaDB metadata at retrieval time and passed to the UI as a separate field-- the LLM never controls this. The UI displays them in a dedicated "Sources" box alongside the answer, so attribution is always present regardless of how the model phrases its response.
 
 ---
 
@@ -103,7 +103,7 @@ The user message then passes the retrieved chunks formatted as `[Source: filenam
 | # | Question | Expected answer | System response (summarized) | Retrieval quality | Response accuracy |
 |---|----------|-----------------|------------------------------|-------------------|-------------------|
 | 1 | What do students say about Melissa Lynch's grading in CSCI160? | Mixed; complaints about lateness and slow grading, but some say she gives good partial credit | Cited slow grading, no email responses, and clear grading criteria from different reviewers | Relevant | Accurate |
-| 2 | Is Maryash good for CSCI135 if you have no C++ experience? | Mixed; some warn it's tough without C++ background, others say he's fair | "I don't have enough information on that." -- retriever returned CSCI160 chunks for Maryash instead of the CSCI135 reviews that mention C++ | Partially relevant | Inaccurate |
+| 2 | Is Maryash good for CSCI135 if you have no C++ experience? | Mixed; some warn it's tough without C++ background, others say he's fair | "I don't have enough information on that."-- retriever returned CSCI160 chunks for Maryash instead of the CSCI135 reviews that mention C++ | Partially relevant | Inaccurate |
 | 3 | How important is attendance for Shostak's CSCI260? | Very important; he doesn't post slides so missing class means missing content | Correctly explained attendance is technically optional but practically necessary since slides aren't posted | Relevant | Accurate |
 | 4 | What do students say about Mneimneh's teaching style in CSCI150? | Highly praised by some; others find lectures unhelpful and grade heavily | Returned a balanced summary citing both strong praise and criticism from different reviewers | Relevant | Accurate |
 | 5 | Do recent reviews recommend taking St. John for CSCI127? | Mostly negative in recent reviews; cheating accusations, heavy workload, poor lecture structure | Correctly identified recent reviews as mixed-to-negative, cited specific years and complaints | Relevant | Accurate |
@@ -126,13 +126,17 @@ The user message then passes the retrieved chunks formatted as `[Source: filenam
      "The embedding model treated the professor's nickname as out-of-vocabulary and returned
      results from an unrelated review" is an explanation. -->
 
-**Question that failed:** "How important is attendance for Shostak's CSCI260?"
+**Question that failed:** "Is Maryash good for CSCI135 if you have no C++ experience?"
 
-**What the system returned:** The top retrieved chunk (distance: 0.8765) was from `prof_maryash_csci160.txt`, not Shostak. It opened with `60 | Date: Jan 3rd, 2024 / Attendance: Mandatory | Would Take Again: Yes` and contained no mention of Shostak or CSCI260.
+**What the system returned:** "I don't have enough information on that." -- even though `prof_maryash_csci135.txt` contains two reviews that explicitly mention C++ experience. All 5 retrieved chunks came from `prof_maryash_csci160.txt`.
 
-**Root cause (tied to a specific pipeline stage):** This is a chunking stage failure. The chunk starts mid-review because the professor header was split into the previous chunk. With no professor name or course code present, the chunk is effectively anonymous-- it just looks like a generic "attendance is mandatory" fragment. The embedding model matched it to the query based on the word "Attendance: Mandatory" alone, with no context to distinguish it from Shostak's file.
+**Root cause (tied to a specific pipeline stage):** This is a retrieval stage failure caused by course-level ambiguity. Maryash has files for both CSCI135 and CSCI160. The query asks about CSCI135 and C++, but the embedding model ranks the CSCI160 reviews as more semantically similar overall-- those reviews discuss studying and effort in ways that align with "is this professor good if you're struggling." The two reviews that mention C++ experience are in the CSCI135 file, but that specific phrasing doesn't dominate the chunk's embedding enough to outrank the CSCI160 chunks. The relevant content exists in the index but never reaches the top-5.
 
-**What you would change to fix it:** Chunk at review boundaries instead of fixed character counts. Each chunk should start at the `Quality:` metadata line of a review so the professor name and course always appear together with the review body. Alternatively, include the professor name and course as a metadata prefix on every chunk so the retriever always has that context even when a chunk falls mid-review.
+**What you would change to fix it:** Embed the course code as a stronger signal by repeating it inside the chunk body rather than only in the header. Alternatively, parse the course code out of the query and filter retrieved chunks by metadata before ranking, so a query that names CSCI135 never pulls CSCI160 chunks at all.
+
+---
+
+**Note-- a previously observed failure that was resolved:** An earlier version of the system used fixed-size 400-character chunks. This caused the top result for "How important is attendance for Shostak's CSCI260?" to be an anonymous mid-review chunk from `prof_maryash_csci160.txt` because the professor header had been split into the previous chunk. Switching to review-boundary chunking fixed this. See the Chunking Strategy section for details.
 
 ---
 
