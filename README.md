@@ -78,7 +78,19 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 **System prompt grounding instruction:**
 
-**How source attribution is surfaced in the response:**
+```
+You are a helpful assistant that answers questions about CS professors at Hunter College using student reviews.
+
+Answer ONLY using the document excerpts provided below. Do not use any knowledge from your training data.
+If the provided excerpts do not contain enough information to answer the question, respond with exactly:
+"I don't have enough information on that."
+
+Do not speculate, generalize, or fill in gaps with outside knowledge. Stick strictly to what the excerpts say.
+```
+
+The user message then passes the retrieved chunks formatted as `[Source: filename]\n{chunk text}` followed by the question. Temperature is set to 0.2 to reduce creative variance.
+
+**How source attribution is surfaced in the response:** Source filenames are extracted programmatically from ChromaDB metadata at retrieval time and passed to the UI as a separate field -- the LLM never controls this. The UI displays them in a dedicated "Sources" box alongside the answer, so attribution is always present regardless of how the model phrases its response.
 
 ---
 
@@ -90,11 +102,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 | # | Question | Expected answer | System response (summarized) | Retrieval quality | Response accuracy |
 |---|----------|-----------------|------------------------------|-------------------|-------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | What do students say about Melissa Lynch's grading in CSCI160? | Mixed; complaints about lateness and slow grading, but some say she gives good partial credit | Cited slow grading, no email responses, and clear grading criteria from different reviewers | Relevant | Accurate |
+| 2 | Is Maryash good for CSCI135 if you have no C++ experience? | Mixed; some warn it's tough without C++ background, others say he's fair | "I don't have enough information on that." -- retriever returned CSCI160 chunks for Maryash instead of the CSCI135 reviews that mention C++ | Partially relevant | Inaccurate |
+| 3 | How important is attendance for Shostak's CSCI260? | Very important; he doesn't post slides so missing class means missing content | Correctly explained attendance is technically optional but practically necessary since slides aren't posted | Relevant | Accurate |
+| 4 | What do students say about Mneimneh's teaching style in CSCI150? | Highly praised by some; others find lectures unhelpful and grade heavily | Returned a balanced summary citing both strong praise and criticism from different reviewers | Relevant | Accurate |
+| 5 | Do recent reviews recommend taking St. John for CSCI127? | Mostly negative in recent reviews; cheating accusations, heavy workload, poor lecture structure | Correctly identified recent reviews as mixed-to-negative, cited specific years and complaints | Relevant | Accurate |
 
 **Retrieval quality:** Relevant / Partially relevant / Off-target  
 **Response accuracy:** Accurate / Partially accurate / Inaccurate
@@ -148,12 +160,12 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
 
 **Instance 1**
 
-- *What I gave the AI:*
-- *What it produced:*
-- *What I changed or overrode:*
+- *What I gave the AI:* The Chunking Strategy section from planning.md (400 char / 50 char overlap) and the document format, and asked Claude to implement `chunk_documents()` that loads all `.txt` files and splits them into overlapping chunks.
+- *What it produced:* A working fixed-size character split with the specified size and overlap, plus preprocessing to strip blank lines.
+- *What I changed or overrode:* After running retrieval tests, I observed that fixed-size chunking was splitting professor headers from review bodies, causing anonymous chunks to rank highly for wrong professors. I overrode the entire chunking approach to split on review boundaries (`Quality:` lines) instead, prepending the professor header to every chunk. This was a complete departure from the original spec, not just a parameter tweak.
 
 **Instance 2**
 
-- *What I gave the AI:*
-- *What it produced:*
-- *What I changed or overrode:*
+- *What I gave the AI:* The Architecture diagram from planning.md, the desired system prompt behavior (answer only from context, cite sources, decline if not enough info), and the Gradio skeleton from the project spec.
+- *What it produced:* Working `query.py` with a `retrieve()` and `ask()` function, and `app.py` with a Gradio UI including example questions.
+- *What I changed or overrode:* I tightened the system prompt to explicitly say "Do not use any knowledge from your training data" rather than a softer suggestion, and set temperature to 0.2. I also moved source attribution to be programmatically extracted from ChromaDB metadata rather than relying on the LLM to include it in the response text.
