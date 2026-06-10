@@ -43,13 +43,13 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      - Any preprocessing you did before chunking (e.g., stripping HTML, removing headers)
      - What your final chunk count was across all documents -->
 
-**Chunk size:** 400 characters
+**Chunk size:** One review per chunk (no fixed character limit)
 
-**Overlap:** 50 characters
+**Overlap:** None
 
-**Why these choices fit your documents:** Each review is a short opinion, usually 2-5 sentences. 400 characters captures one complete thought without merging unrelated reviews together. The 50-character overlap prevents key facts from getting cut off at a chunk boundary, which matters when a review body starts right after a metadata line.
+**Why these choices fit your documents:** Originally implemented 400-character fixed-size chunks with 50-character overlap. During retrieval testing, a mid-review chunk from a different professor ranked as the top result for a Shostak attendance query because the professor header had been split into the previous chunk, leaving an anonymous fragment that matched on surface keywords alone. Switching to review-boundary chunking means every chunk starts with the professor/course header and contains exactly one complete review, so the retriever always has attribution context. See Failure Case Analysis for the full breakdown.
 
-**Final chunk count:** 204
+**Final chunk count:** 147 (one per review, down from 204 with fixed-size chunking)
 
 ---
 
@@ -114,13 +114,13 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      "The embedding model treated the professor's nickname as out-of-vocabulary and returned
      results from an unrelated review" is an explanation. -->
 
-**Question that failed:**
+**Question that failed:** "How important is attendance for Shostak's CSCI260?"
 
-**What the system returned:**
+**What the system returned:** The top retrieved chunk (distance: 0.8765) was from `prof_maryash_csci160.txt`, not Shostak. It opened with `60 | Date: Jan 3rd, 2024 / Attendance: Mandatory | Would Take Again: Yes` and contained no mention of Shostak or CSCI260.
 
-**Root cause (tied to a specific pipeline stage):**
+**Root cause (tied to a specific pipeline stage):** This is a chunking stage failure. The chunk starts mid-review because the professor header was split into the previous chunk. With no professor name or course code present, the chunk is effectively anonymous-- it just looks like a generic "attendance is mandatory" fragment. The embedding model matched it to the query based on the word "Attendance: Mandatory" alone, with no context to distinguish it from Shostak's file.
 
-**What you would change to fix it:**
+**What you would change to fix it:** Chunk at review boundaries instead of fixed character counts. Each chunk should start at the `Quality:` metadata line of a review so the professor name and course always appear together with the review body. Alternatively, include the professor name and course as a metadata prefix on every chunk so the retriever always has that context even when a chunk falls mid-review.
 
 ---
 

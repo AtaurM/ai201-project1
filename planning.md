@@ -40,11 +40,11 @@ Student reviews of CS professors at Hunter College, covering the intro and core 
      numbers fit the structure of your documents.
      A review-heavy corpus warrants different chunking than a long FAQ. -->
 
-**Chunk size:** 400 characters
+**Chunk size:** One review per chunk (no fixed character limit)
 
-**Overlap:** 50 characters
+**Overlap:** None
 
-**Reasoning:** Each review is a short opinion, usually 2-5 sentences. 400 characters captures one complete thought without merging unrelated reviews. The 50-character overlap prevents key facts from getting cut off at a chunk boundary, which matters when a review body starts right after a metadata line.
+**Reasoning:** Originally planned 400-character chunks with 50-character overlap. During testing, fixed-size chunking caused a retrieval failure where a mid-review chunk from Maryash's CSCI160 file ranked as the top result for a Shostak CSCI260 attendance query. The chunk had been split such that the professor header landed in the previous chunk, leaving an anonymous "Attendance: Mandatory" fragment that matched the query on surface keywords alone. Switching to review-boundary chunking fixes this: every chunk starts with the professor/course header line and contains exactly one complete review, so attribution context is always present. This reduced the total chunk count from 204 to 147.
 
 ---
 

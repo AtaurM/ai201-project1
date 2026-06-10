@@ -1,15 +1,6 @@
 import os
 
 
-def chunk_text(text, size=400, overlap=50):
-    chunks = []
-    start = 0
-    while start < len(text):
-        chunks.append(text[start:start + size])
-        start += size - overlap
-    return chunks
-
-
 def chunk_documents(folder="documents"):
     results = []
     for filename in os.listdir(folder):
@@ -18,11 +9,24 @@ def chunk_documents(folder="documents"):
         path = os.path.join(folder, filename)
         with open(path, "r", encoding="utf-8") as f:
             text = f.read()
+
         lines = text.splitlines()
         lines = [l for l in lines if l.strip() and not set(l.strip()) <= {"=", "-"}]
-        text = "\n".join(lines)
-        for chunk in chunk_text(text):
-            results.append({"text": chunk, "source": filename})
+
+        # first line is always the professor/course header
+        header = lines[0] if lines else ""
+
+        # split into one chunk per review, each starting at "Quality:"
+        current = []
+        for line in lines[1:]:
+            if line.startswith("Quality:") and current:
+                results.append({"text": header + "\n" + "\n".join(current), "source": filename})
+                current = [line]
+            else:
+                current.append(line)
+        if current:
+            results.append({"text": header + "\n" + "\n".join(current), "source": filename})
+
     return results
 
 
