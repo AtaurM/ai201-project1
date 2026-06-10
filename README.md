@@ -9,10 +9,7 @@
 
 ## Domain
 
-<!-- What topic or category of knowledge does your system cover?
-     Why is this knowledge valuable, and why is it hard to find through official channels?
-     Example: "Student reviews of CS professors at [university] — useful because official
-     course descriptions don't reflect teaching style, exam difficulty, or workload." -->
+Student reviews of CS professors at Hunter College, covering the intro and core courses: CSCI127 (Intro to CS), CSCI135 (Software Analysis & Design 1), CSCI150 (Discrete Mathematics), CSCI160 (Computer Architecture 1), and CSCI260 (Computer Architecture 2). Official course descriptions don't tell you anything useful before picking a class. They won't tell you if the professor is hard to understand, if the TAs grade fairly, how much you'll need to self-study, or what the final actually looks like. Students figure this out through word of mouth and Rate My Professors, but that info is spread out and hard to search through.
 
 ---
 
@@ -24,16 +21,16 @@
 
 | # | Source | Type | URL or file path |
 |---|--------|------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | Melissa Lynch - CSCI127 | RMP reviews (14) | documents/prof_lynch_csci127.txt |
+| 2 | Melissa Lynch - CSCI160 | RMP reviews (15) | documents/prof_lynch_csci160.txt |
+| 3 | Katherine St. John - CSCI127 | RMP reviews (15) | documents/prof_stjohn_csci127.txt |
+| 4 | Tong Yi - CSCI135 | RMP reviews (15) | documents/prof_yi_csci135.txt |
+| 5 | Gennadi Maryash - CSCI135 | RMP reviews (15) | documents/prof_maryash_csci135.txt |
+| 6 | Saad Mneimneh - CSCI150 | RMP reviews (15) | documents/prof_mneimneh_csci150.txt |
+| 7 | Susan Epstein - CSCI150 | RMP reviews (15) | documents/prof_epstein_csci150.txt |
+| 8 | Gennadi Maryash - CSCI160 | RMP reviews (15) | documents/prof_maryash_csci160.txt |
+| 9 | Eric Schweitzer - CSCI160 | RMP reviews (13) | documents/prof_schweitzer_csci160.txt |
+| 10 | Shostak - CSCI260 | RMP reviews (15) | documents/prof_shostak_csci260.txt |
 
 ---
 

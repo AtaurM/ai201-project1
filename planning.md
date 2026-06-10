@@ -9,7 +9,7 @@
 
 ## Domain
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+Student reviews of CS professors at Hunter College, covering the intro and core courses: CSCI127 (Intro to CS), CSCI135 (Software Analysis & Design 1), CSCI150 (Discrete Mathematics), CSCI160 (Computer Architecture 1), and CSCI260 (Computer Architecture 2). Official course descriptions don't tell you anything useful before picking a class. They won't tell you if the professor is hard to understand, if the TAs grade fairly, how much you'll need to self-study, or what the final actually looks like. Students figure this out through word of mouth and Rate My Professors, but that info is spread out and hard to search through.
 
 ---
 
@@ -20,16 +20,16 @@
 
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | Melissa Lynch - CSCI127 | 14 student reviews of Lynch's Intro to CS section | documents/prof_lynch_csci127.txt |
+| 2 | Melissa Lynch - CSCI160 | 15 student reviews of Lynch's Computer Architecture section | documents/prof_lynch_csci160.txt |
+| 3 | Katherine St. John - CSCI127 | 15 student reviews of St. John's Intro to CS section | documents/prof_stjohn_csci127.txt |
+| 4 | Tong Yi - CSCI135 | 15 student reviews of Yi's Software Analysis & Design 1 section | documents/prof_yi_csci135.txt |
+| 5 | Gennadi Maryash - CSCI135 | 15 student reviews of Maryash's Software Analysis & Design 1 section | documents/prof_maryash_csci135.txt |
+| 6 | Saad Mneimneh - CSCI150 | 15 student reviews of Mneimneh's Discrete Math section | documents/prof_mneimneh_csci150.txt |
+| 7 | Susan Epstein - CSCI150 | 15 student reviews of Epstein's Discrete Math section | documents/prof_epstein_csci150.txt |
+| 8 | Gennadi Maryash - CSCI160 | 15 student reviews of Maryash's Computer Architecture section | documents/prof_maryash_csci160.txt |
+| 9 | Eric Schweitzer - CSCI160 | 13 student reviews of Schweitzer's Computer Architecture section | documents/prof_schweitzer_csci160.txt |
+| 10 | Shostak - CSCI260 | 15 student reviews of Shostak's Computer Architecture 2 section | documents/prof_shostak_csci260.txt |
 
 ---
 
